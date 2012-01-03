@@ -3,12 +3,9 @@ import java.io.IOException;
 import net.tootallnate.websocket.WebSocket;
 import net.tootallnate.websocket.WebSocketServer;
 
-/**
- * A simple WebSocketServer implementation. Keeps track of a "chatroom".
- */
-public class ChatServer extends WebSocketServer {
+public class SampleServer extends WebSocketServer {
 
-    public ChatServer(int port) {
+    public SampleServer(int port) {
         super(port);
     }
 
@@ -48,8 +45,8 @@ public class ChatServer extends WebSocketServer {
         try {
             port = Integer.parseInt(args[0]);
         } catch(Exception ex) {}
-        ChatServer s = new ChatServer(port);
+        SampleServer s = new SampleServer(port);
         s.start();
-        System.out.println("ChatServer started on port: " + s.getPort());
+        System.out.println("Server started on port: " + s.getPort());
     }
 }
