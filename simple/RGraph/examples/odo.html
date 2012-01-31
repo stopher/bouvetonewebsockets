@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <!--
+        /**
+        * o------------------------------------------------------------------------------o
+        * | This file is part of the RGraph package - you can learn more at:             |
+        * |                                                                              |
+        * |                          http://www.rgraph.net                               |
+        * |                                                                              |
+        * | This package is licensed under the RGraph license. For all kinds of business |
+        * | purposes there is a small one-time licensing fee to pay and for non          |
+        * | commercial  purposes it is free to use. You can read the full license here:  |
+        * |                                                                              |
+        * |                      http://www.rgraph.net/LICENSE.txt                       |
+        * o------------------------------------------------------------------------------o
+        */
+    -->
+    <title>Odometer charts</title>
+    
+    <meta name="keywords" content="rgraph html5 canvas example odometer charts" />
+    <meta name="description" content="Odometer charts example" />
+    
+    <meta property="og:title" content="RGraph: HTML5 Javascript charts library" />
+    <meta property="og:description" content="A charts library based on the HTML5 canvas tag" />
+    <meta property="og:image" content="http://www.rgraph.net/images/logo.png"/>
+
+    <link rel="stylesheet" href="../css/website.css" type="text/css" media="screen" />
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    
+    <!-- Place this tag in your head or just before your close body tag -->
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+
+    <script src="../libraries/RGraph.common.core.js" ></script>
+    <script src="../libraries/RGraph.common.effects.js" ></script>
+    <script src="../libraries/RGraph.odo.js" ></script>
+    <!--[if lt IE 9]><script src="../excanvas/excanvas.original.js"></script><![endif]-->
+
+    <script>
+        window.onload = function ()
+        {
+            // ID, MINIMUM, MAXIMUM, INDICATED VALUE
+            var odo1 = new RGraph.Odometer('odo1', 0, 12,9.5);
+            odo1.Set('chart.labels', ['12', '1','2','3','4','5','6','7','8','9','10','11']);
+            odo1.Set('chart.needle.thickness', 5);
+            odo1.Set('chart.needle.color', 'black');
+            odo1.Set('chart.needle.extra', [[6, 'black', 50]]);
+            odo1.Set('chart.needle.head', false);
+            odo1.Set('chart.label.area', 40);
+            odo1.Set('chart.shadow.outer', true);
+            odo1.Set('chart.needle.tail', false);
+
+            odo1.Set('chart.green.color', 'gray');
+            odo1.Set('chart.yellow.color', 'gray');
+            odo1.Set('chart.red.color', 'gray');
+            
+            RGraph.AddCustomEventListener(odo1, 'ondraw',
+                function (obj)
+                {
+                    var context = obj.context;
+                    context.strokeStyle = 'black';
+                    context.fillStyle = 'white';
+                    context.beginPath();
+                        context.moveTo(obj.centerx, obj.centery);
+                        context.arc(obj.centerx, obj.centery, 10, 0, 6.28, 0);
+                    context.stroke();
+                    context.fill();
+                }
+            );
+
+            odo1.Draw();
+            
+            var odo2 = new RGraph.Odometer('odo2', 0, 360, RGraph.random(0, 360));
+            odo2.Set('chart.needle.color', 'black');
+            odo2.Set('chart.needle.tail', false);
+            odo2.Set('chart.label.area', 35);
+            odo2.Set('chart.border', RGraph.isOld() ? false : true);
+            odo2.Set('chart.labels', ['N','NE','E','SE','S','SW','W','NW']);
+            odo2.Set('chart.value.text', true);
+            odo2.Set('chart.value.units.post', '°');
+            
+            if (navigator.userAgent.indexOf('Firefox') > 0) {
+                odo2.Set('chart.tickmarks', false);
+                odo2.Set('chart.tickmarks.highlighted', true);
+            }
+            
+            if (RGraph.isOld()) {
+                odo2.Draw();
+            } else {
+                RGraph.Effects.Odo.Grow(odo2);
+                
+                setInterval(function ()
+                {
+                    odo2.value = odo2.currentValue + RGraph.random(-50,50);
+                    RGraph.Effects.Odo.Grow(odo2);
+                }, 3000);
+            }
+            
+            
+            var odo3 = new RGraph.Odometer('odo3',0, 200, 160);
+            odo3.Set('chart.green.max', 150);
+            odo3.Set('chart.red.min', 175);
+            odo3.Set('chart.shadow.inner', true);
+            odo3.Set('chart.value.text', true);
+            odo3.Set('chart.value.units.post', ' litres');
+            odo3.Draw();
+        }
+    </script>
+
+    <script>
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-54706-2']);
+      _gaq.push(['_trackPageview']);
+    
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+</head>
+<body>
+
+    
+    <!-- Social networking buttons -->
+        <?php
+            $prefix = substr($_SERVER['SERVER_NAME'], 0, 3);
+            require("/rgraph.{$prefix}/social.html");
+        ?>
+    <!-- Social networking buttons -->
+
+
+    <h1>Odometer <span>charts</span></h1>
+
+    <script>
+        if (RGraph.isOld()) {
+            document.write('<div style="background-color: #fee; border: 2px dashed red; padding: 5px"><b>Important</b><br /><br /> Internet Explorer does not natively support the HTML5 canvas tag, so if you want to see the charts, you can either:<ul><li>Install <a href="http://code.google.com/chrome/chromeframe/">Google Chrome Frame</a></li><li>Use ExCanvas. This is provided in the RGraph Archive.</li><li>Use another browser entirely. Your choices are Firefox 3.5+, Chrome 2+, Safari 4+ or Opera 10.5+. </li></ul> <b>Note:</b> Internet Explorer 9 fully supports the canvas tag.</div>');
+        }
+    </script>
+
+
+    <div id="breadcrumb">
+        <a href="../index.html">RGraph: HTML5 Javascript charts library</a>
+        >
+        <a href="./index.html">Examples</a>
+        >
+        Odometer charts
+    </div>
+    
+    <div class="warning">
+        <b>Note:</b>
+        Using tickmarks can have a significant detrimental impact on the Grow animation frame rate. You can turn tickmarks off by using
+        the setting: <i>myObj.Set('chart.tickmarks', false);</i> Instead you may want to use the highlight setting:
+        <i>myOodo.Set('chart.tickmarks.highlighted', true);</i>
+    </div>
+
+    <div>
+        <p>
+            Odometer charts can be used to provide an indication of a particular value. For example you could easily use them to
+            represent values for a control panel that shows information about a server. Odometer charts indicating how much disk
+            space is used for example, would be more visual than a simple number.
+        </p>
+        
+        <p>
+            The green, yellow and red areas are configurable, allowing you to add some level of urgency into your figures (as are
+            the colors). The figures are also configurable, so it can go from 0-10, or from 0-100.
+        </p>
+
+        <ul>
+            <li><a href="../docs/odo.html">Odometer charts API documentation</a></li>
+        </ul>
+    </div>
+    
+    <canvas id="odo1" width="300" height="300">[No canvas support]</canvas>
+    <canvas id="odo2" width="300" height="300">[No canvas support]</canvas>
+    <canvas id="odo3" width="300" height="300">[No canvas support]</canvas>
+</body>
+</html>

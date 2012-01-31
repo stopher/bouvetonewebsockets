@@ -1,0 +1,36 @@
+#{extends 'main.html' /}
+#{set title:'Home' /}
+
+<div id="messages"> </div>
+
+
+<a href="#" onclick="alert('Du trykket..');">Test interaksjon</a>
+
+
+<script type="text/javascript">
+
+
+if (!window.Worker) {
+	alert('workers not supported. get new browser.')
+}
+
+/*
+for (var i = 0; i <= 100000000; i += 1){
+   var k = i;
+}
+alert(k);
+
+*/
+
+var worker = new Worker("/public/javascripts/testWorker.js");
+// receive messages from web worker
+worker.onmessage = function(e){
+	$("#messages").append("Result:"+e.data+"<br/>");
+};
+
+// send message to web worker
+worker.postMessage("doJob");
+$("#messages").append("Started adding large number. <br/>");
+
+
+</script>

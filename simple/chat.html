@@ -7,73 +7,154 @@
     <meta name="author" content="christopher olaussen">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">    
     <link href="bootstrap.css" rel="stylesheet">
+	
     <style type="text/css">
       body {
         padding-top: 60px;
       }
     </style>
     
+    <script type="text/javascript" src="jquery-1.7.1.js"></script>
+    <script type="text/javascript" src="kinetic-v3.4.3.min.js"></script>
     
+    <script src="RGraph/libraries/RGraph.common.core.js" ></script>
+    <script src="RGraph/libraries/RGraph.common.context.js" ></script>
+    <script src="RGraph/libraries/RGraph.line.js" ></script>
     
-    <script type="text/javascript" src="prototype.js"></script>
     
     <script type="text/javascript">
-        document.observe("dom:loaded", function() {
-            function log(text) {
-                $("log").innerHTML = (new Date).getTime() + ": " + (!Object.isUndefined(text) && text !== null ? text.escapeHTML() : "null") + $("log").innerHTML;
+    
+            d1 = [];
+            d2 = [];
+        
+            // Pre-pad the arrays with 100 null values
+            for (var i=0; i<100; ++i) {
+                d1.push(null);
+                d2.push(null);
             }
+
+            function getGraph(id, d1)
+            {
+                var graph = new RGraph.Line(id,  d1);
+                graph.Set('chart.xticks', 100);
+                graph.Set('chart.background.barcolor1', 'white');
+                graph.Set('chart.background.barcolor2', 'white');
+                graph.Set('chart.title.xaxis', 'Tid >>>');
+                graph.Set('chart.title.yaxis', 'Kurs NOK');
+                graph.Set('chart.title.vpos', 0.5);
+                graph.Set('chart.title', 'Ticket BOUVET OBX 2025');
+                graph.Set('chart.title.yaxis.pos', 0.5);
+                graph.Set('chart.title.xaxis.pos', 0.5);
+                graph.Set('chart.filled', true);
+                graph.Set('chart.fillstyle', ['#daf1fa', '#faa']);
+                graph.Set('chart.colors', ['rgb(169, 222, 244)', 'red']);
+                graph.Set('chart.linewidth', 1);
+                //graph.Set('chart.ylabels.inside', true);
+                graph.Set('chart.yaxispos', 'right');
+                graph.Set('chart.ymax', 200);
+                graph.Set('chart.xticks', 25);
+    
+                return graph;
+            }
+        
+            function drawGraph (tval)
+            {
+                RGraph.Clear(document.getElementById("cvs"));
+                
+                var graph = getGraph('cvs', d1);
+                graph.Draw();
+                
+                // Add some data to the data array
+                d1.push(tval);
+                
+                if (d1.length > 100) {
+                    d1 = RGraph.array_shift(d1);
+                }
+            }    
+    
+        function log(text) {
+        	var date = new Date();        	
+            $("#log").html(date.getHours() + ":" +date.getMinutes()+":"+date.getSeconds()+"| "+text+ $("#log").html());
+        }
+    
+        $(function() {
 
             if (!window.WebSocket) {
-                alert("WebSocket not natively supported, falling back to Flash");
-                      
-            } else {
-                log("Using browser's native WebSocket implementation")
+                log("Websocket er ikke støttet.\n");
             }
-
-            var ws;
-
-            $("uriForm").observe("submit", function(e) {
-                e.stop();
-                ws = new WebSocket($F("uri"));
-                ws.onopen = function() {
-                    log("[WebSocket#onopen]\n");
-                }
-                ws.onmessage = function(e) {
-                    log("[WebSocket#onmessage] Message: '" + e.data + "'\n");
-                }
+            var ws = new WebSocket("ws://localhost:8887");
+            
+            ws.onopen = function() {
+				log("[WebSocket#onopen]\n");
+			}
+                
+            ws.onmessage = function(e) {
+				var msg = JSON.parse(e.data);
+				if(msg.type === "NEWVISITOR") {
+					log("A new person joined bouvetone"+"'\n");
+				} else if(msg.type === "TICKER") {
+					drawGraph(msg.value);						
+				} else {
+                	log(msg.name+": " + msg.saying + "\n");						
+				}
+            }
+                
                 ws.onclose = function() {
-                    log("[WebSocket#onclose]\n");
-                    $("uri", "connect").invoke("enable");
-                    $("disconnect").disable();
+                    log("[Event#onclose]\n");                   
                     ws = null;
                 }
-                $("uri", "connect").invoke("disable");
-                $("disconnect").enable();
-            });
-
-            $("sendForm").observe("submit", function(e) {
-                e.stop();
+                
+                
+            $("#sendForm").submit(function(e) {
+				
                 if (ws) {
-                    var textField = $("textField");
-                    ws.send(textField.value);
-                    log("[WebSocket#send]      Send:    '" + textField.value + "'\n");
-                    textField.value = "";
-                    textField.focus();
+                	
+					msgObj=new Object();
+					msgObj.type="SAYING";
+					msgObj.posx=2;
+					msgObj.posy=20;
+									
+					msgObj.saying=$("#textField").val();                    
+                    ws.send(JSON.stringify(msgObj));
+                    $("#textField").val("");
+                     $("#textField").focus();
+                    
                 }
+                return false;
             });
 
-            $("disconnect").observe("click", function(e) {
-                e.stop();
+            $("#disconnect").click(function(e) {
+                
                 if (ws) {
                     ws.close();
+					log("System:Tilkopling lukket" + "'\n");
                 }
-            });
-        });
+                return false;
+            });    
+            
+            
+            $("#usernameform").submit(function(e) {				
+                if (ws) {
+					msgObj=new Object();
+					msgObj.type="CHANGENAME";
+					msgObj.name = $("#username").val(); 									
+                    ws.send(JSON.stringify(msgObj));
+                     $("#textField").focus();                    
+                }
+                return false;
+            });            
+             
+		});
+
+	
+	
+
     </script>
   </head>
   
 	
-	<body>
+	<body >
+
 	  	<div class="topbar">
 	      <div class="fill">
 	        <div class="container">
@@ -81,26 +162,45 @@
 	          <ul class="nav">
 	            <li class="active"><a href="#">Websockets</a></li>
 	          </ul>
+       			<form id="usernameform"><input name="username" type="text" class="large" id="username" value="anonym" style="width:200px;"> <input type="submit" class="" value="Oppdater navn"></form>
 	        </div>
+	        
 	      </div>
 	    </div>
 	    
 		<div class="container">
-		<div class="hero-unit">
-		 	
-		 	<h2>websockets</h2>
-		 	
-	    	<form id="uriForm">
-	      		<input type="text" class="btn large" id="uri" value="ws://localhost:8887" style="width:200px;"> <input type="submit" class="btn primary large" id="connect" value="Connect" style="margin-right:20px"><input type="button" class="btn large" id="disconnect" value="Disconnect" disabled="disabled">
-	      	</form>
-	      
-	      	<form id="sendForm">
-	      		<input  type="text" class="btn large" id="textField" value="" style="width:200px;"> <input type="submit" class="btn primary large" value="Send">
-	      	</form>
-	      	<form>
-	      		<textarea class="span14" id="log" rows="30" cols="400" style="font-family:monospace; color:black;"></textarea>
-	      	</form>
-	      	</div>
+			
+			<div class="well" style="height:250px">
+				<canvas id="cvs" width="900" height="250" style="float: right">[No canvas support]</canvas>
+			</div>
+			<div>
+
+			
+			<div class="hero-unit">
+				<img src="bouvet_logo.png" />
+			 	<h3>websockets</h3>
+		      
+		      	<form id="sendForm">
+		      		<input  type="text" class="btn large" id="textField" value="" style="width:200px;"> <input type="submit" class="btn primary large" value="Send">
+		      	</form>
+		      	<form>
+		      		<textarea class="span14" id="log" rows="30" cols="400" style="font-family:monospace; color:black;"></textarea>
+		      	</form>
+	
+	
+		      	<form>
+					<input type="button" class="btn large" id="disconnect" value="Disconnect" >
+		      	</form>
+		      </div>
+		      
+		      
+		      <div class="well">
+  	      
+		      </div>
+		      
+	      </div>
       </div>
+
+      
   </body>
 </html>

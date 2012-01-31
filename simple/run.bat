@@ -1,0 +1,1 @@
+java -cp .;library\gson-2.1.jar;library\WebSocket.jar no.bouvet.bouvetone.SampleServer

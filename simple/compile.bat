@@ -1,0 +1,1 @@
+javac -cp .;library\gson-2.1.jar;library\WebSocket.jar no\bouvet\bouvetone\Message.java
